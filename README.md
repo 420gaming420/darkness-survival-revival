@@ -4,7 +4,8 @@ This is a hex edit patcher project that "revives" the abandoned android game **D
 **Notice:** No game content or code is in this project — only modding scripts and tools. The latest version of the game apk "v1.1.29" is required and not included. There are NO game files or assets in this repo.
 
 ## Patcher Proof
-Video will be added once I figure out how to add it to a github repo lol
+
+https://github.com/user-attachments/assets/7d6ba17d-c86a-431c-aa72-27ba416fc654
 
 Be aware that since this is an ARM32 game, it only runs on devices compatible with ARM32. For the android studio AVD, you have to use Android 11 x86_64 (not x86), as shown in the video as that version contains an ARM32 translation library for backwards compatability.
 
