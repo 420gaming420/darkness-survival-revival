@@ -1,0 +1,117 @@
+#!/bin/bash
+# Apply smali patches via hex byte replacement
+# Stores only patch (after) bytes; finds methods by signature to locate edit points.
+# Requires: apk already unpacked via 1-import.sh
+#
+# Patches:
+#   1. GPGS sign-in bypass: isSignedIn() always true, onStart() skips GoogleApiClient,
+#      beginUserInitiatedSignIn() forces success
+#   2. Ad reward skip: isUnityAdsAvailable() always true, presentUnityAds() instant reward
+
+set -e
+
+python3 - <<'PYEOF'
+import sys
+import os
+
+# ── Patch data (after-bytes only, hex-encoded) ──────────────────────────────
+# Each patch is identified by a method signature marker used to locate the
+# edit point in the target file. The full method body is replaced with the
+# patch bytes.
+
+PATCHES = [
+    # Ad reward skip
+    (
+        "project/smali/com/zeroplusplus/common/NativeWrapperActivity.smali",
+        ".method public static isUnityAdsAvailable()Z",
+        "2e6d6574686f64207075626c696320737461746963206973556e697479416473417661696c61626c6528295a0a202020202e6c6f63616c7320330a0a20202020636f6e73742d737472696e672076302c202252504731220a20202020636f6e73742d737472696e672076312c20225b33313431355d206973556e697479416473417661696c61626c6520535455422072657475726e696e672074727565203d3d3d220a20202020696e766f6b652d737461746963207b76302c2076317d2c204c616e64726f69642f7574696c2f4c6f673b2d3e69284c6a6176612f6c616e672f537472696e673b4c6a6176612f6c616e672f537472696e673b29490a20202020636f6e73742f342076322c203078310a2020202072657475726e2076320a2e656e64206d6574686f64",
+    ),
+    (
+        "project/smali/com/zeroplusplus/common/NativeWrapperActivity.smali",
+        ".method public static presentUnityAds()V",
+        "2e6d6574686f64207075626c6963207374617469632070726573656e74556e6974794164732829560a202020202e6c6f63616c7320330a0a20202020636f6e73742d737472696e672076302c202252504731220a20202020636f6e73742d737472696e672076312c20225b33313431355d2070726573656e74556e6974794164732053545542202d20696e7374616e7420726577617264203d3d3d220a20202020696e766f6b652d737461746963207b76302c2076317d2c204c616e64726f69642f7574696c2f4c6f673b2d3e69284c6a6176612f6c616e672f537472696e673b4c6a6176612f6c616e672f537472696e673b29490a20202020636f6e73742f342076322c203078300a20202020696e766f6b652d737461746963207b76327d2c204c636f6d2f7a65726f706c7573706c75732f636f6d6d6f6e2f4e61746976655772617070657241637469766974793b2d3e6f6e556e697479416473436f6d706c65746564284929560a2020202072657475726e2d766f69640a2e656e64206d6574686f64",
+    ),
+    # GPGS sign-in bypass
+    (
+        "project/smali/com/zeroplusplus/common/GameHelper.smali",
+        ".method public isSignedIn()Z",
+        "2e6d6574686f64207075626c69632069735369676e6564496e28295a0a202020202e6c6f63616c7320320a0a20202020636f6e73742d737472696e672076302c202252504731220a0a20202020636f6e73742d737472696e672076312c20223d3d3d5b33313431355d2069735369676e6564496e20666f7263656420747275653d3d3d220a0a20202020696e766f6b652d737461746963207b76302c2076317d2c204c616e64726f69642f7574696c2f4c6f673b2d3e69284c6a6176612f6c616e672f537472696e673b4c6a6176612f6c616e672f537472696e673b29490a0a20202020636f6e73742f342076302c203078310a0a2020202072657475726e2076300a2e656e64206d6574686f64",
+    ),
+    (
+        "project/smali/com/zeroplusplus/common/BaseGameActivity.smali",
+        ".method protected isSignedIn()Z",
+        "2e6d6574686f642070726f7465637465642069735369676e6564496e28295a0a202020202e6c6f63616c7320320a0a20202020636f6e73742d737472696e672076302c202252504731220a0a20202020636f6e73742d737472696e672076312c20223d3d3d5b33313431355d204261736547616d6541637469766974792e69735369676e6564496e20666f7263656420747275653d3d3d220a0a20202020696e766f6b652d737461746963207b76302c2076317d2c204c616e64726f69642f7574696c2f4c6f673b2d3e69284c6a6176612f6c616e672f537472696e673b4c6a6176612f6c616e672f537472696e673b29490a0a20202020636f6e73742f342076302c203078310a0a2020202072657475726e2076300a2e656e64206d6574686f64",
+    ),
+    (
+        "project/smali/com/zeroplusplus/common/GameHelper.smali",
+        ".method public beginUserInitiatedSignIn()V",
+        "2e6d6574686f64207075626c696320626567696e55736572496e697469617465645369676e496e2829560a202020202e6c6f63616c7320320a0a202020202e70726f6c6f6775650a20202020636f6e73742f342076312c203078310a0a202020202e6c696e65203634350a20202020636f6e73742d737472696e672076302c20223d3d3d205b33313431355d20626567696e55736572496e697469617465645369676e496e20666f7263696e6720475047532073756363657373203d3d3d220a0a20202020696e766f6b652d737461746963207b76302c2076307d2c204c616e64726f69642f7574696c2f4c6f673b2d3e64284c6a6176612f6c616e672f537472696e673b4c6a6176612f6c616e672f537472696e673b29490a0a202020202e6c696e65203635340a20202020696e766f6b652d7669727475616c207b70302c2076317d2c204c636f6d2f7a65726f706c7573706c75732f636f6d6d6f6e2f47616d6548656c7065723b2d3e6e6f746966794c697374656e6572285a29560a0a202020202e6c696e65203638360a202020203a676f746f5f300a2020202072657475726e2d766f69640a2e656e64206d6574686f64",
+    ),
+    (
+        "project/smali/com/zeroplusplus/common/BaseGameActivity.smali",
+        ".method protected onStart()V",
+        "2e6d6574686f642070726f746563746564206f6e53746172742829560a202020202e6c6f63616c7320310a0a202020202e70726f6c6f6775650a0a202020202e6c696e65203131300a20202020696e766f6b652d7375706572207b70307d2c204c6f72672f636f636f733264782f6c69622f436f636f7332647841637469766974793b2d3e6f6e53746172742829560a0a202020202e6c696e65203131310a20202020636f6e73742d737472696e672076302c202252504731220a0a20202020636f6e73742d737472696e672076312c20223d3d3d5b33313431355d206f6e537461727420736b697070696e6720476f6f676c65417069436c69656e7420636f6e6e656374696f6e3d3d3d220a0a20202020696e766f6b652d737461746963207b76302c2076317d2c204c616e64726f69642f7574696c2f4c6f673b2d3e69284c6a6176612f6c616e672f537472696e673b4c6a6176612f6c616e672f537472696e673b29490a0a202020202e6c696e65203131320a2020202072657475726e2d766f69640a2e656e64206d6574686f64",
+    ),
+]
+
+# ── Helpers ──────────────────────────────────────────────────────────────────
+
+def extract_method(data, sig):
+    """Find a method by signature and return (start, end, body)."""
+    m = sig.encode() if isinstance(sig, str) else sig
+    e = b'.end method'
+    si = data.index(m)
+    depth = 0
+    ei = si
+    for i in range(si, len(data)):
+        if data[i:i+len(m)] == m:
+            depth += 1
+        if data[i:i+len(e)] == e:
+            depth -= 1
+            if depth == 0:
+                ei = i + len(e)
+                break
+    return si, ei, data[si:ei]
+
+
+def apply_method_patch(data, sig, after_hex):
+    """Replace entire method body with patch bytes."""
+    si, ei, body = extract_method(data, sig)
+    after = bytes.fromhex(after_hex)
+    data[si:ei] = after
+    return si, len(body), len(after)
+
+
+# ── Main ─────────────────────────────────────────────────────────────────────
+
+files_checked = {}
+applied = 0
+skipped = 0
+
+for filepath, sig, after_hex in PATCHES:
+    if filepath not in files_checked:
+        if not os.path.isfile(filepath):
+            print(f"Error: {filepath} not found. Run 1-import.sh first.")
+            sys.exit(1)
+        with open(filepath, "rb") as f:
+            files_checked[filepath] = bytearray(f.read())
+
+    data = files_checked[filepath]
+    si, ei, body = extract_method(data, sig)
+    if b"[31415]" in body:
+        print(f"  {filepath.split('/')[-1]} [{sig.split()[-1]}]: already applied, skipping")
+        skipped += 1
+        continue
+
+    new_si, old_len, new_len = apply_method_patch(data, sig, after_hex)
+    print(f"  {filepath.split('/')[-1]} [{sig.split()[-1]}]: applied ({old_len} -> {new_len} bytes)")
+    applied += 1
+
+# Write all modified files
+for filepath, data in files_checked.items():
+    with open(filepath, "wb") as f:
+        f.write(data)
+
+print(f"\nApplied {applied} patches, skipped {skipped}.")
+print("Smali patched successfully.")
+PYEOF

@@ -1,0 +1,38 @@
+========================================================================================================================
+DARKNESS SURVIVAL — NATIVE SYMBOL MAPPING
+libcocos2dcpp.so cross-referenced with Cocos2d-x cpp-tests reference binary
+========================================================================================================================
+
+Target dynamic symbols:    25494
+Cocos2d-x reference:       147391
+COMMON (auto-resolved):    21714 (85.2%)
+TARGET-ONLY (game-specific): 3780
+Ghidra-resolved functions:  18571
+
+========================================================================================================================
+SUMMARY STATISTICS
+========================================================================================================================
+
+Total dynamic symbols in target binary:     25494
+Resolved via cpp-tests cross-reference:     21714 (85.2%)
+Game-specific (not in cpp-tests):            3780 (14.8%)
+Ghidra-resolved functions with names:        15143
+
+BREAKDOWN OF RESOLVED SYMBOLS:
+  - Cocos2d-x engine functions:              ~8393
+  - C++ Standard Library:                    ~1340
+  - System/RT:                               ~91
+  - JNI entry points:                        ~20
+
+BREAKDOWN OF GAME-SPECIFIC SYMBOLS:
+  - Java_ JNI entry points:                  8
+  - JNI utility functions (non-Java_):       39
+  - Game C++ classes (_ZN...):               2612
+  - Spine animation library:                 20
+  - Other native (inet, GL, etc.):           1140
+
+AUTOMATION RATIO:
+  Auto-resolved via cross-reference:         21714/25494 = 85.2%
+  Remaining (need manual work):              3780/25494 = 14.8%
+    Of which game C++ classes:               2612 (can be demangled with c++filt)
+    Of which JNI entry points:               47 (self-documenting names)

@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+# search - recursive grep from $PWD, no hardcoded paths ever
+# Usage: ./search "pattern" [--include PATTERN]
+
+set -euo pipefail
+
+PATTERN="${1:?Usage: search <pattern> [--include PATTERN]}"
+
+EXTRA=""
+if [[ "${2:-}" == "--include"* ]]; then
+    EXTRA="--include ${3:-}"
+fi
+
+grep -rnHn $EXTRA --exclude-dir='.git' --exclude-dir='tools' --exclude-dir='sources' --exclude-dir='src' --exclude-dir='summaries' "$PATTERN" . 2>/dev/null | python3 -c "
+import sys
+
+pattern = sys.argv[1] if len(sys.argv) > 1 else ''
+lines = sys.stdin.read().strip().split('\n') if sys.stdin else []
+
+def sort_key(line):
+    parts = line.split(':', 1)
+    filepath = parts[0] if len(parts) > 1 else ''
+    basename = filepath.split('/')[-1] if '/' in filepath else filepath
+    pat_lower = pattern.lower().replace('0x','')
+    return 0 if basename.lower().startswith(pat_lower + '_') else 1
+
+for line in sorted(lines, key=sort_key):
+    print(line)
+" "$PATTERN"

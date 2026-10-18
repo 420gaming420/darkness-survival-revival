@@ -1,0 +1,16 @@
+*.apk
+*.pyc
+*.jks
+*.kate-swp
+decompiled/
+tools/ghidra/
+project/build/
+project/lib/armeabi/*.sha256
+sources/
+ghidra_server.pid
+src/ghidra_server.pid
+ghidra_server.log
+/.python-version
+project/
+.env
+__pycache__/

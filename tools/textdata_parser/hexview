@@ -1,0 +1,79 @@
+#!/usr/bin/env python3
+"""hexview - hexdump wrapper with hex offset support.
+
+Usage:
+    hexview FILE [--offset HEX] [--skip HEX] [--lines LINES]
+
+Arguments accept hex (0x2E88, 2E88) or decimal (11912) values.
+The 0000:2E88 format is also supported.
+"""
+
+import argparse
+import sys
+
+
+def parse_hex(s):
+    """Parse a hex or decimal string, optionally in segment:offset format."""
+    s = s.strip()
+    if ':' in s:
+        parts = s.split(':')
+        return (int(parts[0], 16) << 16) + int(parts[1], 16)
+    if s.startswith(('0x', '0X')):
+        return int(s, 16)
+    # Try hex first, fall back to decimal
+    try:
+        return int(s, 16)
+    except ValueError:
+        return int(s)
+
+
+def hexview(data, base_offset=0, skip=0, lines=10):
+    start = base_offset + skip
+    if start >= len(data):
+        return
+    for i in range(lines):
+        pos = start + i * 4
+        if pos + 4 > len(data):
+            break
+        chunk = data[pos:pos + 4]
+        hex_str = chunk.hex()
+        ascii_str = ''.join(chr(b) if 32 <= b < 127 else '.' for b in chunk)
+        print(f'{i * 4:08x}: {hex_str}  {ascii_str}')
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description='Hexdump with hex offset support (4 bytes/line, uint32)'
+    )
+    parser.add_argument('file', help='Binary file to display')
+    parser.add_argument('--offset', default='0',
+                        help='Start offset in hex (e.g. 2E88, 0x2E88, 0000:2E88)')
+    parser.add_argument('--skip', default='0',
+                        help='Additional bytes to skip from the offset (hex/decimal)')
+    parser.add_argument('--lines', '-n', type=int, default=10,
+                        help='Number of lines to display (default: 10)')
+
+    if len(sys.argv) == 1:
+        parser.print_help()
+        sys.exit(0)
+
+    args = parser.parse_args()
+
+    try:
+        with open(args.file, 'rb') as f:
+            data = f.read()
+    except FileNotFoundError:
+        print(f'Error: file not found: {args.file}', file=sys.stderr)
+        sys.exit(1)
+    except PermissionError:
+        print(f'Error: permission denied: {args.file}', file=sys.stderr)
+        sys.exit(1)
+
+    base_offset = parse_hex(args.offset)
+    skip = parse_hex(args.skip)
+
+    hexview(data, base_offset=base_offset, skip=skip, lines=args.lines)
+
+
+if __name__ == '__main__':
+    main()

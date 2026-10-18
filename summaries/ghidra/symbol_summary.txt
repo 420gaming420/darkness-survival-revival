@@ -1,0 +1,103 @@
+DARKNESS SURVival — QUICK REFERENCE: NATIVE SYMBOL ANALYSIS
+======================================================================
+
+KEY FINDINGS
+----------------------------------------------------------------------
+Total dynamic symbols:      25494
+Resolved via cpp-tests:     21714 (85.2%)
+Game-specific only:         3780 (14.8%)
+Ghidra function count:      18571 (all functions, incl. INIT)
+
+GAME-SPECIFIC C++ CLASSES (top 20 by symbol count)
+----------------------------------------------------------------------
+  cocos                        129 symbols   (sample:  @ N/A)
+  ens                           81 symbols   (sample: ens::valueToStr(float, int) @ 0x38ca38)
+  spine                         20 symbols   (sample: spine::SkeletonBatch::addCommand(cocos2d::Renderer*, float, unsigned int, cocos2 @ 0x455034)
+  _                              2 symbols   (sample:  @ N/A)
+
+WELL-KNOWN GAME CLASSES (with addresses)
+----------------------------------------------------------------------
+  Actor                     @ 0x36cb94   (Actor::afterAttackAnimation()...)
+  Item                      @ 0x39ce34   (Item::~Item()...)
+  Player                    @ 0x3ab1b0   (Player::isDoubleAttackEnabled()...)
+  GameRuntime               @ 0x392cb8   (GameRuntime::GameRuntime()...)
+  UILayer                   @ 0x3cbba8   (UILayer::onTouchMoved(cocos2d::Touch*, cocos2d::Event*)...)
+  DungeonView               @ 0x387498   (DungeonView::onTouchCancelled(cocos2d::Touch*, cocos2d::Event*)...)
+  DungeonGenerator          @ 0x380744   (DungeonGenerator::getSpecialRoomTemplateIndex(int, int)...)
+  Bag                       @ 0x37eafc   (Bag::getDataSize()...)
+  UICommon                  @ 0x3bc864   (UICommon::initActionTimeline(cocos2d::Node*, std::basic_string<char, s...)
+  GameNet                   @ 0x3e5ce0   (GameNet::GameNet()...)
+  Structure                 @ 0x3b5eec   (Structure::getDataSize()...)
+  ActorSprite               @ 0x373738   (ActorSprite::removeShadow()...)
+
+JNI ENTRY POINTS (all)
+----------------------------------------------------------------------
+  Java_com_chukong_cocosplay_client_CocosPlayClient_getSearchPaths
+    Class: UNKNOWN  |  Address: 0x3f11dc
+  Java_com_zeroplusplus_common_NativeWrapperActivity_IAPReceiveResultCallback
+    Class: Java_com_zeroplusplus_common_NativeWrapperActivity  |  Address: 0x3e7d8c
+  Java_com_zeroplusplus_common_NativeWrapperActivity_fullScreenADCallback
+    Class: Java_com_zeroplusplus_common_NativeWrapperActivity  |  Address: 0x3a95c8
+  Java_com_zeroplusplus_common_NativeWrapperActivity_onFBChangeProfile
+    Class: Java_com_zeroplusplus_common_NativeWrapperActivity  |  Address: 0x3a92f4
+  Java_com_zeroplusplus_common_NativeWrapperActivity_onFBLogin
+    Class: Java_com_zeroplusplus_common_NativeWrapperActivity  |  Address: 0x3a9348
+  Java_com_zeroplusplus_common_NativeWrapperActivity_onGameServiceLogin
+    Class: Java_com_zeroplusplus_common_NativeWrapperActivity  |  Address: 0x3a8e7c
+  Java_com_zeroplusplus_common_NativeWrapperActivity_onUnityAdsCompleted
+    Class: Java_com_zeroplusplus_common_NativeWrapperActivity  |  Address: 0x3a94a4
+  Java_com_zeroplusplus_common_NativeWrapperActivity_setUrlSchemeParamCallback
+    Class: Java_com_zeroplusplus_common_NativeWrapperActivity  |  Address: 0x3a93fc
+  Java_com_zeroplusplus_common_NativeWrapperActivity_shareFinishedCallback
+    Class: Java_com_zeroplusplus_common_NativeWrapperActivity  |  Address: 0x3a93a8
+  Java_org_cocos2dx_lib_Cocos2dxAccelerometer_onSensorChanged
+    Class: UNKNOWN  |  Address: 0x3ef0c0
+  Java_org_cocos2dx_lib_Cocos2dxActivity_getGLContextAttrs
+    Class: UNKNOWN  |  Address: 0x3eec90
+  Java_org_cocos2dx_lib_Cocos2dxBitmap_nativeInitBitmapDC
+    Class: UNKNOWN  |  Address: 0x3edeb4
+  Java_org_cocos2dx_lib_Cocos2dxHelper_nativeSetApkPath
+    Class: UNKNOWN  |  Address: 0x3ef32c
+  Java_org_cocos2dx_lib_Cocos2dxHelper_nativeSetContext
+    Class: UNKNOWN  |  Address: 0x3ef368
+  Java_org_cocos2dx_lib_Cocos2dxHelper_nativeSetEditTextDialogResult
+    Class: UNKNOWN  |  Address: 0x3ef382
+  Java_org_cocos2dx_lib_Cocos2dxRenderer_nativeDeleteBackward
+    Class: UNKNOWN  |  Address: 0x3f073c
+  Java_org_cocos2dx_lib_Cocos2dxRenderer_nativeGetContentText
+    Class: UNKNOWN  |  Address: 0x3f0748
+  Java_org_cocos2dx_lib_Cocos2dxRenderer_nativeInit
+    Class: UNKNOWN  |  Address: 0x3eebb8
+  Java_org_cocos2dx_lib_Cocos2dxRenderer_nativeInsertText
+    Class: UNKNOWN  |  Address: 0x3f06f4
+  Java_org_cocos2dx_lib_Cocos2dxRenderer_nativeKeyEvent
+    Class: UNKNOWN  |  Address: 0x3f0f00
+  Java_org_cocos2dx_lib_Cocos2dxRenderer_nativeOnPause
+    Class: UNKNOWN  |  Address: 0x3f0614
+  Java_org_cocos2dx_lib_Cocos2dxRenderer_nativeOnResume
+    Class: UNKNOWN  |  Address: 0x3f0684
+  Java_org_cocos2dx_lib_Cocos2dxRenderer_nativeOnSurfaceChanged
+    Class: UNKNOWN  |  Address: 0x3eed08
+  Java_org_cocos2dx_lib_Cocos2dxRenderer_nativeRender
+    Class: UNKNOWN  |  Address: 0x3f0604
+  Java_org_cocos2dx_lib_Cocos2dxRenderer_nativeTouchesBegin
+    Class: UNKNOWN  |  Address: 0x3f0d24
+  Java_org_cocos2dx_lib_Cocos2dxRenderer_nativeTouchesCancel
+    Class: UNKNOWN  |  Address: 0x3f0e52
+  Java_org_cocos2dx_lib_Cocos2dxRenderer_nativeTouchesEnd
+    Class: UNKNOWN  |  Address: 0x3f0d64
+  Java_org_cocos2dx_lib_Cocos2dxRenderer_nativeTouchesMove
+    Class: UNKNOWN  |  Address: 0x3f0da4
+
+HEX PATCH STATUS (verify before modifying)
+----------------------------------------------------------------------
+  Patch A (networking bne.n): NOT APPLIED (original beq.n)
+  Patch B (getGameNetState return 2): NOT APPLIED (original)
+
+COCOS2D-X VERSION INFERENCE
+----------------------------------------------------------------------
+  AudioEngine                         NOT FOUND
+  ObjectFactory                       FOUND
+  EventDispatcher::DirtyFlag          NOT FOUND
+  Vec4                                NOT FOUND
+  kmMat4                              FOUND
