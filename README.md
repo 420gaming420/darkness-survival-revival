@@ -33,7 +33,7 @@ These features expect a server response that never arrives:
 | IAP crash on tap (`IabHelper was disposed`) | LOW | Stubbed, low priority |
 | Free common box does nothing | LOW | Reward delivery expects server confirm |
 
-See [summaries/patch/OFFLINE_PATCH_PLAYTEST.md](https://raw.githubusercontent.com/420gaming420/darkness-survival-revival/dev/summaries/patch/OFFLINE_PATCH_PLAYTEST.md) for the full playtest report.
+See [summaries/patch/OFFLINE_PATCH_PLAYTEST.md](https://github.com/420gaming420/darkness-survival-revival/blob/dev/summaries/patch/OFFLINE_PATCH_PLAYTEST.md) for the full playtest report.
 
 ## Quick Start
 
@@ -79,7 +79,7 @@ Five byte-level patches to `libcocos2dcpp.so` that bypass all connection require
 | D | `GameNet::getResult()` | `0x3d5e98` | Always return `1` (SUCCESS) |
 | E | `UILayer::sendPacket()` | `0x3c04c0` | No-op — return immediately, eliminates "Connecting to Server" screen |
 
-See [summaries/patch/REPRODUCE_HEX_PATCH.md](https://raw.githubusercontent.com/420gaming420/darkness-survival-revival/dev/summaries/patch/REPRODUCE_HEX_PATCH.md) for full technical details.
+See [summaries/patch/REPRODUCE_HEX_PATCH.md](https://github.com/420gaming420/darkness-survival-revival/blob/dev/summaries/patch/REPRODUCE_HEX_PATCH.md) for full technical details.
 
 The patches are idempotent — re-running `run.sh` on an already-patched file skips silently.
 
@@ -98,7 +98,7 @@ python3 export.py --all                            # export all functions
 python3 patcher.py --show <function>               # inspect + patch preview
 ```
 
-See [AGENTS.md](https://raw.githubusercontent.com/420gaming420/darkness-survival-revival/dev/AGENTS.md)f for the full tool reference.
+See [AGENTS.md](https://github.com/420gaming420/darkness-survival-revival/blob/dev/AGENTS.md) for the full tool reference.
 
 ## How It Works
 
