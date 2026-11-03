@@ -127,7 +127,7 @@ from src.logic.server.state import set_analysis_status
 
 _v("IMPORTS: loading handlers...")
 from src.logic.server.decompile import handle_decompile
-from src.logic.server.export import handle_export_all, handle_export_single
+from src.logic.server.export import handle_export_all, handle_export_benchmark, handle_export_single
 from src.logic.server.patcher_apply import (
     handle_patcher_apply,
     handle_patcher_export,
@@ -144,6 +144,7 @@ register_handlers(
     handle_decompile=handle_decompile,
     handle_export_single=handle_export_single,
     handle_export_all=handle_export_all,
+    handle_export_benchmark=handle_export_benchmark,
     handle_patcher_show=handle_patcher_show,
     handle_patcher_preview=handle_patcher_preview,
     handle_patcher_apply=handle_patcher_apply,

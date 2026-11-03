@@ -20,6 +20,7 @@ def run_export(
     max_depth: int | None = None,
     benchmark: bool = False,
     progress_callback=None,
+    symbol_cache: dict[int, str] | None = None,
 ) -> dict:
     """Run the full export loop for a list of functions.
 
@@ -36,6 +37,7 @@ def run_export(
         max_depth: Optional depth limit — skip functions deeper than this.
         benchmark: If True, collect per-function timing breakdowns.
         progress_callback: Optional callable(idx, total) for progress updates.
+        symbol_cache: Pre-built O(1) address→mangled-name cache.
 
     Returns:
         Dict with keys: total, exported, skipped, errors.
@@ -48,7 +50,7 @@ def run_export(
     errors = 0
     t0 = time.time()
 
-    for idx, (entry_addr_str, func_name, depth) in enumerate(func_entries):
+    for idx, (entry_addr_str, func_name, depth, category) in enumerate(func_entries):
         if max_depth is not None and depth > max_depth:
             skipped += 1
             continue
@@ -69,8 +71,10 @@ def run_export(
             entry_addr=entry_addr,
             func_name=func_name,
             depth=depth,
+            category=category,
             decompiled_dir=decompiled_dir,
             benchmark=benchmark,
+            symbol_cache=symbol_cache,
         )
 
         if success:

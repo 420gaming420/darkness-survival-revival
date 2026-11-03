@@ -122,12 +122,11 @@ def parse_export_args(argv: list[str | None] = None) -> argparse.Namespace:
     parser.add_argument(
         "--benchmark",
         type=int,
+        default=None,
         nargs="?",
-        const=100,
-        default=0,
-        help="Sample N functions to estimate full export time (default: 100)",
+        const=10,
+        help="Benchmark N functions to estimate full export time (default: 10)",
     )
-
     return parser.parse_args(argv or sys.argv[1:])
 
 

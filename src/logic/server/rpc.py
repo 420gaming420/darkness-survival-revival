@@ -13,6 +13,7 @@ DISPATCH = {
     "export_all": None,
     "export_reachable": None,
     "export_stale": None,
+    "export_benchmark": None,
     "patcher_show": None,
     "patcher_preview": None,
     "patcher_apply": None,
@@ -29,6 +30,7 @@ def register_handlers(
     handle_decompile,
     handle_export_single,
     handle_export_all,
+    handle_export_benchmark,
     handle_patcher_show,
     handle_patcher_preview,
     handle_patcher_apply,
@@ -47,6 +49,7 @@ def register_handlers(
         handle_decompile: Decompilation handler function.
         handle_export_single: Single-function export handler.
         handle_export_all: Bulk export handler.
+        handle_export_benchmark: Benchmark export handler.
         handle_patcher_show: Patcher show handler.
         handle_patcher_preview: Patcher preview handler.
         handle_patcher_apply: Patcher apply handler.
@@ -59,6 +62,7 @@ def register_handlers(
     DISPATCH["export_all"] = handle_export_all
     DISPATCH["export_reachable"] = handle_export_all
     DISPATCH["export_stale"] = handle_export_all
+    DISPATCH["export_benchmark"] = handle_export_benchmark
     DISPATCH["patcher_show"] = handle_patcher_show
     DISPATCH["patcher_preview"] = handle_patcher_preview
     DISPATCH["patcher_apply"] = handle_patcher_apply

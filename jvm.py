@@ -33,13 +33,23 @@ def run_code(code: str) -> None:
     if "error" in result:
         print(f"[ERROR] {result['error']}")
     else:
-        print(result["result"])
+        output = result["result"]
+        # Don't print empty completion messages
+        if output not in ("(exec completed)", "(exec completed, no output)"):
+            print(output)
 
 
 def main():
     if len(sys.argv) > 1:
-        # Single expression mode
-        code = " ".join(sys.argv[1:])
+        # Check for --exec flag
+        if sys.argv[1] == "--exec":
+            if len(sys.argv) < 3:
+                print("Usage: jvm.py --exec 'code'")
+                sys.exit(1)
+            code = " ".join(sys.argv[2:])
+        else:
+            # Single expression mode
+            code = " ".join(sys.argv[1:])
         run_code(code)
         return
 
@@ -51,6 +61,7 @@ def main():
 
     print("[*] Connected to JVM session")
     print("[*] Available: fpa, prog, mem, listing, func_mgr")
+    print("[*] Auto-imported: TaskMonitor, AddressSet, SimpleBlockModel, DecompInterface, DecompileOptions")
     print("[*] Type 'help()' or 'dir(fpa)' for info")
     print("[*] Enter code and press Enter. Use 'exit' or Ctrl+D to quit.\n")
 
@@ -77,12 +88,18 @@ def main():
             result = rpc("execute", {"code": user_input})
             if "error" in result:
                 print(f"[ERROR] {result['error']}")
+                # Show traceback for debugging
+                if "Traceback" in result['error']:
+                    print("(See full traceback above)")
             else:
                 output = result["result"]
-                if output != "(exec completed, no output)":
+                # Don't print empty completion messages
+                if output not in ("(exec completed)", "(exec completed, no output)"):
                     print(output)
         except Exception as e:
             print(f"[ERROR] {e}")
+            import traceback
+            traceback.print_exc()
 
 
 if __name__ == "__main__":

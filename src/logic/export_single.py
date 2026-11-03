@@ -26,8 +26,10 @@ def export_single_function(
     entry_addr: int,
     func_name: str,
     depth: int,
+    category: str,
     decompiled_dir: Path,
     benchmark: bool = False,
+    symbol_cache: dict[int, str] | None = None,
 ) -> tuple[bool, float, str, dict]:
     """Export all 4 output files for a single function.
 
@@ -38,23 +40,37 @@ def export_single_function(
         textdata: Loaded textdata dictionary.
         entry_addr: Function entry address.
         func_name: Function name.
-        depth: BFS depth level for output directory.
+        depth: BFS depth level (kept for API compat, not used for path).
+        category: Subdirectory name (e.g. 'UILayer', '_cxa', '_thunk').
         decompiled_dir: Root output directory.
         benchmark: If True, return per-step timing breakdown.
+        symbol_cache: Pre-built O(1) address→mangled-name cache.
 
     Returns:
         (success, elapsed_seconds, error_message, timing_dict)
-        timing_dict keys: decompile, format_c, assembly, cfg, refs, total
+        timing_dict keys: make_filename, get_category, find_function,
+                         decompile, format_c, assembly, cfg, refs, write, total
     """
     t0 = time.time()
-    addr_prefix = make_filename(entry_addr, func_name)
-    out_dir = decompiled_dir / str(depth)
-    os.makedirs(out_dir, exist_ok=True)
-
     timings: dict[str, float] = {}
 
+    # ── Filename ──
+    t_fn = time.time()
+    addr_prefix = make_filename(entry_addr, func_name, fpa, prog, symbol_cache=symbol_cache)
+    timings["make_filename"] = time.time() - t_fn
+
+    # ── Directory ──
+    out_dir = decompiled_dir / category
     try:
+        os.makedirs(out_dir, exist_ok=True)
+    except OSError:
+        elapsed = time.time() - t0
+        return False, elapsed, f"path too long: {out_dir}", {}
+
+    try:
+        t_func = time.time()
         func = fpa.getFunctionAt(fpa.toAddr(hex(entry_addr)))
+        timings["find_function"] = time.time() - t_func
     except Exception as e:
         elapsed = time.time() - t0
         return False, elapsed, str(e), {}
@@ -73,7 +89,7 @@ def export_single_function(
             elapsed = time.time() - t0
             return False, elapsed, f"decompilation failed: {err}", {}
 
-        ccode = result.getDecompiledFunction().c  # already multi-line formatted with proper indentation
+        ccode = result.getDecompiledFunction().c
         di.flushCache()
         timings["decompile"] = time.time() - t_decompile
 
@@ -83,7 +99,7 @@ def export_single_function(
         annotated, found_count = annotate_lines(lines, textdata)
         annotated_code = "\n".join(annotated)
 
-        # ── Build addr→C code mapping (for assembly interleaving) ──
+        # ── Build addr→C code mapping ──
         addr_c_code = build_addr_c_code(result)
         timings["format_c"] = time.time() - t_format
 
@@ -134,6 +150,7 @@ def export_single_function(
         with open(ref_file, "w") as f:
             f.write(ref_text)
 
+        timings["write"] = time.time() - t_ref
         timings["total"] = time.time() - t0
         return True, timings["total"], "", timings if benchmark else {}
 
